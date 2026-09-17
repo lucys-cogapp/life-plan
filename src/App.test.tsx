@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import App from './App'
 import { en } from './en'
 import { formatDayHeading, toDateKey } from './week'
@@ -88,6 +88,38 @@ test('going over the target counts up instead of down', async () => {
   render(<App />)
   await logMeal('Feast', '15000')
   expect(screen.getByText(en.totals.over(1000))).toBeInTheDocument()
+})
+
+test('exporting hands over every meal logged', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await logMeal('Beans, toast', '410')
+
+  // jsdom implements none of this, so the download is observed through the blob
+  // handed to createObjectURL and the anchor the button builds. Stubbing the
+  // click also keeps jsdom from logging a failed navigation to the blob URL.
+  const blobs: Blob[] = []
+  URL.createObjectURL = vi.fn((blob: Blob) => {
+    blobs.push(blob)
+    return 'blob:test'
+  })
+  URL.revokeObjectURL = vi.fn()
+  const anchors: HTMLAnchorElement[] = []
+  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    anchors.push(this)
+  })
+
+  const overview = within(screen.getByRole('region', { name: en.week.overview }))
+  await user.click(overview.getByRole('button', { name: en.csv.button }))
+  click.mockRestore()
+
+  expect(anchors[0].download).toBe(en.csv.filename(toDateKey(today)))
+  const csv = await blobs[0].text()
+  expect(csv).toContain(en.csv.columns.join(','))
+  expect(csv).toContain(`${toDateKey(today)},${en.days.long[(today.getDay() + 6) % 7]}`)
+  expect(csv).toContain('"Beans, toast",Breakfast,410')
 })
 
 test('footer links to the repo', () => {

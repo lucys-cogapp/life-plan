@@ -68,6 +68,13 @@ export const en = {
     remove: (name: string) => `Remove ${name}`,
     empty: 'Nothing logged yet.',
   },
+  csv: {
+    heading: 'Export',
+    button: 'Download CSV',
+    hint: 'Every meal ever logged, as a spreadsheet. The only way to keep a copy.',
+    columns: ['Date', 'Day', 'Meal', 'Type', 'Calories'],
+    filename: (date: string) => `meal-tracker-${date}.csv`,
+  },
   today: 'Today',
   repoLink: 'View on GitHub',
 } as const

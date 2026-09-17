@@ -38,6 +38,10 @@ a limit.
 Weeks are kept rather than reset: the arrows page back and forward, and past weeks keep
 whatever was logged in them.
 
+**Download CSV**, at the foot of the week overview, writes every meal ever logged to a
+spreadsheet: date, day, meal, type, calories. Nothing is stored anywhere but the
+browser, so that file is the only backup there is.
+
 ## Scripts
 
 | Script | Does |
@@ -62,6 +66,7 @@ whatever was logged in them.
 | `src/WeekOverview.tsx` | The eighth panel: day bars, totals, the target field |
 | `src/MealForm.tsx` | Name, type and calorie fields |
 | `src/meals.ts` | The meal types and the totalling and editing helpers |
+| `src/csv.ts` | The CSV export |
 | `src/week.ts` | Monday-anchored week maths and date formatting |
 | `src/en.ts` | Every string in the UI |
 
@@ -74,7 +79,7 @@ because every GitHub Pages project site under one account shares an origin:
 - `meal-tracker:target`, the weekly calorie target
 
 Nothing leaves the device and there is no account. Clearing the browser's site data
-clears the log with it.
+clears the log with it, which is what the CSV export is for.
 
 ## Deploying
 

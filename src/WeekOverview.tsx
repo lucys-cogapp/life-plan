@@ -1,8 +1,22 @@
 import { useEffect, useId, useState } from 'react'
+import { toCsv } from './csv'
 import { en } from './en'
 import type { MealsByDate } from './meals'
 import { dayTotal } from './meals'
 import { toDateKey } from './week'
+
+function downloadCsv(meals: MealsByDate) {
+  // The BOM is what stops Excel reading a UTF-8 meal name as mojibake.
+  const blob = new Blob([`\ufeff${toCsv(meals)}`], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = en.csv.filename(toDateKey(new Date()))
+  link.click()
+  // Revoked a tick later: Safari cancels a download whose object URL goes out
+  // from under it in the same task.
+  setTimeout(() => URL.revokeObjectURL(url), 0)
+}
 
 type Props = {
   days: Date[]
@@ -105,11 +119,11 @@ export function WeekOverview({
             inputMode="numeric"
             min="0"
             step="50"
-            className="min-h-11 flex-1 rounded-md border border-slate-300 bg-white px-3 text-base"
+            className="min-h-11 w-full min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-base"
           />
           <button
             type="submit"
-            className="min-h-11 rounded-md bg-slate-900 px-4 font-medium text-white hover:bg-slate-700"
+            className="min-h-11 shrink-0 whitespace-nowrap rounded-md bg-slate-900 px-4 font-medium text-white hover:bg-slate-700"
           >
             {en.target.save}
           </button>
@@ -118,6 +132,18 @@ export function WeekOverview({
           <p className="mt-2 text-slate-600 text-sm">{en.target.hint(Math.round(target / 7))}</p>
         )}
       </form>
+
+      <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <h3 className="font-semibold text-slate-900">{en.csv.heading}</h3>
+        <p className="mt-1 text-slate-600 text-sm">{en.csv.hint}</p>
+        <button
+          type="button"
+          onClick={() => downloadCsv(meals)}
+          className="mt-2 min-h-11 w-full rounded-md border border-slate-300 bg-white px-4 font-medium hover:bg-slate-100"
+        >
+          {en.csv.button}
+        </button>
+      </div>
 
       <p className="mt-5 text-center text-slate-500 text-sm">
         <a className="underline underline-offset-4 hover:text-slate-900" href={__REPO_URL__}>

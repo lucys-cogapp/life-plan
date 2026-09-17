@@ -9,6 +9,11 @@ export function toDateKey(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`
 }
 
+export function fromDateKey(key: string): Date {
+  const [year, month, day] = key.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
 export function addDays(date: Date, days: number): Date {
   const next = new Date(date.getFullYear(), date.getMonth(), date.getDate())
   next.setDate(next.getDate() + days)

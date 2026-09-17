@@ -69,7 +69,7 @@ If a commit ever runs without the hooks firing, the hooks are not installed: run
 ## Commands
 
 ```sh
-npm run dev         # dev server (the user runs this, not Claude)
+npm run dev         # dev server
 npm test            # vitest run
 npm run lint        # biome check .
 npm run format      # biome check --write .
@@ -121,6 +121,12 @@ think nothing is still on it. Adding a new optional field to `Meal` is safe as l
 code copes with it being absent on everything already stored. When in doubt, ask rather
 than guess: the cost of asking is a question, the cost of guessing is the user's log.
 
+The CSV export in the week overview is the only way data leaves the app, so it is the
+one thing standing between a browser clearing its storage and the log being gone. It
+writes every day ever logged, not the week on screen. `toCsv` quotes to RFC 4180
+because meal names are free text, and the blob carries a BOM so Excel reads a UTF-8
+name correctly.
+
 `useLocalStorage(key, initial)` returns `[value, setValue, remove]`. Every access is
 wrapped because storage throws, rather than returning null, in Safari private mode and
 wherever a site is blocked from storing data.
@@ -168,7 +174,8 @@ on a cache-invalidation cycle on every deploy; do it only when asked.
 - Use the package manager for dependencies (`npm install` / `npm uninstall`) rather than
   hand-editing `package.json`, so versions resolve properly. Editing scripts, config and
   other fields by hand is fine.
-- Don't start the dev server; that is the developer's to run.
+- Running the dev server is fine, and checking a change in a browser is better than
+  guessing at it. Reuse the one already on 5173 rather than starting a second.
 - Don't break what is already in localStorage. See the rule in Storage: it is the only
   copy of the user's log.
 - After significant work, run `npm run format`, `npm run typecheck` and `npm test`, and
