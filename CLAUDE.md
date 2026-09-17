@@ -101,6 +101,26 @@ After significant work run `npm run format`, `npm run typecheck` and `npm test`.
 Two keys hold everything: `<name>:meals` and `<name>:target`. There is no account and
 nothing leaves the device, so clearing site data clears the log.
 
+**What is in localStorage is the only copy.** The app is deployed and in use, so those
+two keys are a live data format, not an implementation detail. There is no server, no
+backup and no export, which means a change that makes existing data unreadable loses
+meals the user actually logged, silently, with nothing to restore from.
+
+So never, in one step:
+
+- rename or renamespace a key, including by changing `name` in `package.json`, which
+  feeds `__APP_KEY__`
+- change the shape of a stored value: the `Meal` fields, the `MealsByDate` map, the
+  `2026-09-17` date key format, or the target being a bare number
+- change what a stored value means, such as reading the target as daily rather than
+  weekly
+
+If a shape genuinely has to change, migrate rather than cut over: read the old shape,
+convert it, write the new one, and keep the old key readable until there is reason to
+think nothing is still on it. Adding a new optional field to `Meal` is safe as long as
+code copes with it being absent on everything already stored. When in doubt, ask rather
+than guess: the cost of asking is a question, the cost of guessing is the user's log.
+
 `useLocalStorage(key, initial)` returns `[value, setValue, remove]`. Every access is
 wrapped because storage throws, rather than returning null, in Safari private mode and
 wherever a site is blocked from storing data.
@@ -121,8 +141,8 @@ whole manifest, devDependency names included, into the client bundle. The link s
 the end of the week overview rather than in the `<footer>`, which the countdown took.
 
 The package `name` is also `__APP_KEY__`, which namespaces the storage keys. Renaming
-the package orphans whatever is already logged in a browser, so do not rename it
-casually.
+the package orphans every meal already logged in a browser, so treat it as fixed. See
+the rule in Storage.
 
 ## Deployment and installing to a home screen
 
@@ -149,6 +169,8 @@ on a cache-invalidation cycle on every deploy; do it only when asked.
   hand-editing `package.json`, so versions resolve properly. Editing scripts, config and
   other fields by hand is fine.
 - Don't start the dev server; that is the developer's to run.
+- Don't break what is already in localStorage. See the rule in Storage: it is the only
+  copy of the user's log.
 - After significant work, run `npm run format`, `npm run typecheck` and `npm test`, and
   fix what they report before calling the work done.
 - If a pre-commit hook fails, read the output and fix the cause. Don't retry until it
