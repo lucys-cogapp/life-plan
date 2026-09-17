@@ -1,13 +1,73 @@
+const calories = (n: number) => n.toLocaleString('en-GB')
+
 export const en = {
-  appName: 'Starter App',
-  tagline: 'React, Tailwind, Biome, Lefthook, TypeScript, Vitest.',
-  counter: {
-    // Takes the count so plural rules stay with the string rather than the component.
-    label: (count: number) => `Counted ${count}`,
-    reset: 'Reset',
-    hint: 'The count survives a reload.',
+  appName: 'Meal Tracker',
+  days: {
+    long: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    short: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
   },
-  footer: {
-    repoLink: 'View on GitHub',
+  months: {
+    short: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    long: [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ],
   },
+  week: {
+    previous: 'Previous week',
+    next: 'Next week',
+    thisWeek: 'This week',
+    tab: 'Week',
+    overview: 'Week overview',
+    // Named so the tab strip reads as a list of days to a screen reader.
+    strip: 'Days of the week',
+    jumpTo: (day: string) => `Go to ${day}`,
+  },
+  totals: {
+    left: (n: number) => `${calories(n)} left`,
+    over: (n: number) => `${calories(n)} over`,
+    ofTarget: (n: number) => `of ${calories(n)} this week`,
+    eaten: (n: number) => `${calories(n)} eaten`,
+    kcal: (n: number) => `${calories(n)} kcal`,
+    dayBudget: (n: number) => `of about ${calories(n)} a day`,
+    weekTotal: 'Eaten this week',
+    average: 'Average a day',
+    noTarget: 'Set a weekly target to start the countdown.',
+  },
+  target: {
+    heading: 'Weekly target',
+    label: 'Calories for the week',
+    hint: (n: number) => `About ${calories(n)} a day spread evenly.`,
+    save: 'Save target',
+    saved: 'Target saved.',
+  },
+  meal: {
+    heading: 'Meals',
+    add: 'Add meal',
+    name: 'Meal',
+    namePlaceholder: 'Porridge',
+    calories: 'Calories',
+    type: 'Meal type',
+    types: {
+      breakfast: 'Breakfast',
+      lunch: 'Lunch',
+      dinner: 'Dinner',
+      snack: 'Snack',
+    },
+    value: (n: number) => `${calories(n)}kcals`,
+    remove: (name: string) => `Remove ${name}`,
+    empty: 'Nothing logged yet.',
+  },
+  today: 'Today',
+  repoLink: 'View on GitHub',
 } as const

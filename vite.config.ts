@@ -30,9 +30,9 @@ const base = (process.env.BASE_PATH ?? '/').replace(/\/?$/, '/')
 function manifestJson(): string {
   return JSON.stringify(
     {
-      name: 'Starter App',
-      short_name: 'Starter',
-      description: 'React SPA starter.',
+      name: 'Meal Tracker',
+      short_name: 'Meals',
+      description: 'Weekly meal and calorie planner.',
       start_url: base,
       scope: base,
       display: 'standalone',

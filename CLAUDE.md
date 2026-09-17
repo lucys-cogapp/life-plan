@@ -1,7 +1,57 @@
 # CLAUDE.md
 
-React SPA template. Vite, TypeScript strict, Tailwind v4, Biome, Vitest, Lefthook,
-deployed to GitHub Pages by Actions.
+A weekly meal and calorie tracker, built on a React SPA template. Vite, TypeScript
+strict, Tailwind v4, Biome, Vitest, Lefthook, deployed to GitHub Pages by Actions.
+
+## What the app is
+
+Log any number of meals a day against a weekly calorie target. Phone first: that is
+where it is used, so a change that reads well on a laptop and badly on a 375px screen
+is a change that has not landed yet.
+
+- The week is Monday to Sunday, anchored in `src/week.ts`. `getDay()` counts from
+  Sunday, so every week calculation goes through `startOfWeek` rather than open-coding
+  the offset.
+- Eight panels, not seven: Monday to Sunday, then the week overview. The overview is a
+  panel in the same swipe track rather than a separate screen, which is why the index
+  `7` means the overview throughout `App.tsx`.
+- Below `lg` the shell is exactly one viewport tall (`h-dvh`, `overflow-hidden`) with
+  the week controls fixed at the top and the weekly countdown fixed at the bottom. The
+  panels scroll inside themselves, so neither piece of chrome moves while a long day is
+  read. Above `lg` that fixed height is dropped and the page scrolls normally, because
+  a seven-column grid cannot be squeezed into one screen.
+- The countdown is at the bottom, by the thumb, not in the header. The add-meal form is
+  at the top of each day, above the list, so it stays put as the day fills up.
+- Panels are moved with `scrollIntoView` on the child, never `scrollTo` of
+  `clientWidth * index`: on the first paint the track is not laid out, that arithmetic
+  is zero, and the view sticks on Monday while the strip says otherwise.
+- Panels live in one horizontally scrolling track using CSS scroll snap, no carousel
+  library. The `lg:` breakpoint turns that same track into a seven-column grid with the
+  overview spanning the row beneath, so there is one DOM tree for both layouts. Keep it
+  that way: rendering the panels twice behind `hidden`/`lg:hidden` duplicates every
+  form control.
+- Every panel stays mounted whatever is on screen, because the track scrolls through
+  them. Tests therefore have to scope queries with `within(...)`, or they match seven
+  identical add-meal forms at once.
+- The strip is `<nav>` with `aria-current`, not ARIA tabs. On a wide screen all the
+  panels are visible at once, which a tablist would misdescribe.
+
+## Data
+
+- A meal is `{ id, name, calories, type }`, type being breakfast, lunch, dinner or
+  snack. A blank name falls back to the meal type label. A meal row writes its figure
+  as `420kcals`; the day and week totals read `1,875 kcal`.
+- Meals are keyed by local date (`2026-09-17`) in one flat object, not grouped into
+  weeks. A week is then just a range of keys, so paging back through past weeks needs
+  no migration when the week boundary or the target changes.
+- Date keys are built from local date parts. `toISOString` reports UTC and would file
+  an evening meal under the wrong day during British Summer Time.
+- One weekly target applies to every week, stored on its own. The header counts it
+  down and switches to counting up once the week goes over. Each day shows the target
+  divided by seven as a guide; there is no separate daily target and adding one was
+  considered and declined.
+- Removing the last meal of a day drops the key rather than leaving `[]`, so storage
+  does not grow an entry for every day the app was opened.
 
 ## Setup
 
@@ -36,7 +86,8 @@ After significant work run `npm run format`, `npm run typecheck` and `npm test`.
   there is no `tailwind.config.js` and adding one is not the v4 way. Put theme
   customisation in an `@theme` block in that file.
 - UI copy lives in `src/en.ts`, not in components. Tests assert against `en` too, so
-  rewording a string does not break them.
+  rewording a string does not break them. Day and month names count as copy and live
+  there as arrays rather than coming from `Intl`.
 - The app is light only. There is no dark mode and no `dark:` variant anywhere; adding
   one means adding the whole theme layer, not a stray class.
 - Tests sit next to the code as `*.test.tsx`, using Testing Library. Query by role
@@ -46,6 +97,9 @@ After significant work run `npm run format`, `npm run typecheck` and `npm test`.
   imports `defineConfig` from `vitest/config` rather than from `vite`.
 
 ## Storage
+
+Two keys hold everything: `<name>:meals` and `<name>:target`. There is no account and
+nothing leaves the device, so clearing site data clears the log.
 
 `useLocalStorage(key, initial)` returns `[value, setValue, remove]`. Every access is
 wrapped because storage throws, rather than returning null, in Safari private mode and
@@ -61,17 +115,21 @@ unprefixed key collides with every other app deployed from that account.
 
 ## The repo URL
 
-The footer link comes from `__REPO_URL__`, a Vite `define` fed by the `repository`
-field in `package.json`. A repo made from this template updates that one field.
-Importing `package.json` into a component instead would inline the whole manifest,
-devDependency names included, into the client bundle.
+The repo link comes from `__REPO_URL__`, a Vite `define` fed by the `repository` field
+in `package.json`. Importing `package.json` into a component instead would inline the
+whole manifest, devDependency names included, into the client bundle. The link sits at
+the end of the week overview rather than in the `<footer>`, which the countdown took.
+
+The package `name` is also `__APP_KEY__`, which namespaces the storage keys. Renaming
+the package orphans whatever is already logged in a browser, so do not rename it
+casually.
 
 ## Deployment and installing to a home screen
 
 `.github/workflows/deploy.yml` builds on push to `main`. It sets `BASE_PATH` from the
 repo name because a project site is served from `/<repo>/`, and Vite bakes that prefix
-into asset URLs at build time. Hardcoding `base` in `vite.config.ts` would break every
-repo made from this template except one.
+into asset URLs at build time. Hardcoding `base` in `vite.config.ts` would tie the
+build to one repo name.
 
 The build also copies `index.html` to `404.html`. Pages has no rewrite rules, so that
 copy is what keeps a refreshed client-side route from 404ing. Keep it if you add a
