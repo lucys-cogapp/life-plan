@@ -111,10 +111,11 @@ After significant work run `npm run format`, `npm run typecheck` and `npm test`.
 Two keys hold everything: `<name>:meals` and `<name>:target`. There is no account and
 nothing leaves the device, so clearing site data clears the log.
 
-**What is in localStorage is the only copy.** The app is deployed and in use, so those
-two keys are a live data format, not an implementation detail. There is no server, no
-backup and no export, which means a change that makes existing data unreadable loses
-meals the user actually logged, silently, with nothing to restore from.
+**What is in localStorage is the only copy.** Once this is on a phone and being used
+daily, those two keys are a live data format, not an implementation detail. There is no
+server and no backup, so a change that makes existing data unreadable loses meals the
+user actually logged, silently, with nothing to restore from. The CSV export is the only
+way a copy gets out.
 
 So never, in one step:
 
@@ -131,11 +132,10 @@ think nothing is still on it. Adding a new optional field to `Meal` is safe as l
 code copes with it being absent on everything already stored. When in doubt, ask rather
 than guess: the cost of asking is a question, the cost of guessing is the user's log.
 
-The CSV export in the week overview is the only way data leaves the app, so it is the
-one thing standing between a browser clearing its storage and the log being gone. It
-writes every day ever logged, not the week on screen. `toCsv` quotes to RFC 4180
-because meal names are free text, and the blob carries a BOM so Excel reads a UTF-8
-name correctly.
+That export sits at the foot of the week overview and writes every day ever logged, not
+the week on screen. `toCsv` quotes to RFC 4180 because meal names are free text, and the
+blob carries a BOM so Excel reads a UTF-8 name correctly. Narrowing it to the current
+week would quietly remove the only backup there is.
 
 `useLocalStorage(key, initial)` returns `[value, setValue, remove]`. Every access is
 wrapped because storage throws, rather than returning null, in Safari private mode and

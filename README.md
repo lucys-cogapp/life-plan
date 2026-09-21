@@ -67,13 +67,14 @@ browser, so that file is the only backup there is.
 | --- | --- |
 | `src/App.tsx` | State, the header countdown, week paging and the swipe track |
 | `src/WeekStrip.tsx` | The Mon-Sun strip and the week tab |
-| `src/DayPanel.tsx` | One day: total, meals grouped by type, the add form |
+| `src/DayPanel.tsx` | One day: total, meals grouped by type with per-type totals, the add form, the open editor |
 | `src/WeekOverview.tsx` | The eighth panel: day bars, totals, the target field |
 | `src/MealForm.tsx` | Name, type and calorie fields, for adding and editing |
 | `src/meals.ts` | The meal types and the totalling and editing helpers |
 | `src/csv.ts` | The CSV export |
 | `src/week.ts` | Monday-anchored week maths and date formatting |
 | `src/en.ts` | Every string in the UI |
+| `src/useLocalStorage.ts` | The storage hook: guarded reads and writes, synced across tabs |
 
 ## Storage
 
