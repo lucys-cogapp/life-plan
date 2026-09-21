@@ -20,11 +20,18 @@ is a change that has not landed yet.
   panels scroll inside themselves, so neither piece of chrome moves while a long day is
   read. Above `lg` that fixed height is dropped and the page scrolls normally, because
   a seven-column grid cannot be squeezed into one screen.
-- The countdown is at the bottom, by the thumb, not in the header. The add-meal form is
-  at the top of each day, above the list, so it stays put as the day fills up.
-- `MealForm` both adds and edits. Passing a `meal` puts it in edit mode: it prefills,
-  swaps the button to Save, shows Cancel and takes focus. One component rather than two
-  keeps the fields, the validation and the blank-name fallback in one place.
+- The countdown is at the bottom, by the thumb, not in the header. The add-meal control
+  is at the top of each day, above the list, so it stays put as the day fills up.
+- At rest a day shows an `Add meal` button, not the form. Tapping it swaps the button
+  for `MealForm`; adding a meal or cancelling swaps it back. `DayPanel` holds that in
+  `adding`, and holds the type last used in `lastType` so it can be passed back as
+  `initialType`: the form unmounts between entries, so it cannot remember the type
+  itself.
+- `MealForm` both adds and edits. Passing a `meal` puts it in edit mode: it prefills
+  and swaps the button to Save. One component rather than two keeps the fields, the
+  validation and the blank-name fallback in one place. Neither mode renders until a
+  button is tapped, so the name field takes focus in both, and `onCancel` (not the mode)
+  decides whether Cancel is shown.
 - Each meal row carries a pencil button next to the remove button, which opens that
   edit form in the row's place. The row itself is not a button: editing is a deliberate
   tap on a named control rather than anywhere on the row. `DayPanel` holds the open row
@@ -42,7 +49,7 @@ is a change that has not landed yet.
   form control.
 - Every panel stays mounted whatever is on screen, because the track scrolls through
   them. Tests therefore have to scope queries with `within(...)`, or they match seven
-  identical add-meal forms at once.
+  identical add-meal buttons at once.
 - The strip is `<nav>` with `aria-current`, not ARIA tabs. On a wide screen all the
   panels are visible at once, which a tablist would misdescribe.
 

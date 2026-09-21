@@ -15,6 +15,7 @@ function todayPanel() {
 
 async function logMeal(name: string, calories: string, type: string = en.meal.types.breakfast) {
   const user = userEvent.setup()
+  await user.click(todayPanel().getByRole('button', { name: en.meal.add }))
   const form = within(todayPanel().getByRole('form', { name: en.meal.addForm }))
   await user.type(form.getByLabelText(en.meal.name), name)
   await user.selectOptions(form.getByLabelText(en.meal.type), type)
@@ -55,6 +56,28 @@ test('a logged meal lands on its day and is stored', async () => {
   expect(panel.getByRole('button', { name: en.meal.edit('Porridge') })).toBeInTheDocument()
   expect(panel.getByText(en.totals.kcal(320))).toBeInTheDocument()
   expect(localStorage.getItem('meal-tracker:meals')).toContain(toDateKey(today))
+})
+
+test('the add form stays shut until asked for and closes again after a meal', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  expect(todayPanel().queryByRole('form', { name: en.meal.addForm })).not.toBeInTheDocument()
+
+  await user.click(todayPanel().getByRole('button', { name: en.meal.add }))
+  expect(todayPanel().getByRole('form', { name: en.meal.addForm })).toBeInTheDocument()
+
+  await logMeal('Porridge', '320')
+  expect(todayPanel().queryByRole('form', { name: en.meal.addForm })).not.toBeInTheDocument()
+  expect(todayPanel().getByText(en.totals.kcal(320))).toBeInTheDocument()
+})
+
+test('cancelling the add form leaves the day alone', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(todayPanel().getByRole('button', { name: en.meal.add }))
+  await user.click(todayPanel().getByRole('button', { name: en.meal.cancel }))
+  expect(todayPanel().queryByRole('form', { name: en.meal.addForm })).not.toBeInTheDocument()
+  expect(todayPanel().getByText(en.meal.empty)).toBeInTheDocument()
 })
 
 test('a day holds as many meals as you log', async () => {

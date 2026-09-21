@@ -7,16 +7,17 @@ type Props = {
   // Present when editing an existing meal, absent when adding a new one.
   meal?: Meal
   onCancel?: () => void
+  // What the type starts on when adding. `DayPanel` passes the type last used on
+  // that day, so logging three snacks does not mean picking "snack" three times.
+  initialType?: MealType
 }
 
-export function MealForm({ onSubmit, meal, onCancel }: Props) {
+export function MealForm({ onSubmit, meal, onCancel, initialType }: Props) {
   const ids = useId()
   const editing = meal !== undefined
   const [name, setName] = useState(meal?.name ?? '')
   const [calories, setCalories] = useState(meal ? String(meal.calories) : '')
-  // When adding, the type carries over between entries: logging three snacks in
-  // a row should not mean picking "snack" three times.
-  const [type, setType] = useState<MealType>(meal?.type ?? 'breakfast')
+  const [type, setType] = useState<MealType>(meal?.type ?? initialType ?? 'breakfast')
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -27,9 +28,6 @@ export function MealForm({ onSubmit, meal, onCancel }: Props) {
       calories: Math.round(parsed),
       type,
     })
-    if (editing) return
-    setName('')
-    setCalories('')
   }
 
   return (
@@ -49,9 +47,10 @@ export function MealForm({ onSubmit, meal, onCancel }: Props) {
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder={en.meal.namePlaceholder}
-          // The row had to be tapped to get here, so the keyboard is wanted.
+          // Neither form is on screen until a button is tapped to open it, so
+          // reaching this field means the keyboard is wanted.
           // biome-ignore lint/a11y/noAutofocus: only on the form the user opened
-          autoFocus={editing}
+          autoFocus
           className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-base"
         />
       </div>
@@ -97,7 +96,7 @@ export function MealForm({ onSubmit, meal, onCancel }: Props) {
         >
           {editing ? en.meal.save : en.meal.add}
         </button>
-        {editing && (
+        {onCancel && (
           <button
             type="button"
             onClick={onCancel}

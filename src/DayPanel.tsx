@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { en } from './en'
 import { MealForm } from './MealForm'
-import { type Meal, type MealDraft, mealTypes, newMealId } from './meals'
+import { type Meal, type MealDraft, type MealType, mealTypes, newMealId } from './meals'
 import { formatDayHeading } from './week'
 
 type Props = {
@@ -26,6 +26,8 @@ export function DayPanel({
   onRemove,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [lastType, setLastType] = useState<MealType>('breakfast')
   const total = meals.reduce((sum, meal) => sum + meal.calories, 0)
   const filled = dailyBudget > 0 ? Math.min(100, (total / dailyBudget) * 100) : 0
   const overBudget = dailyBudget > 0 && total > dailyBudget
@@ -61,7 +63,28 @@ export function DayPanel({
         </div>
       )}
 
-      <MealForm onSubmit={(draft) => onAdd({ id: newMealId(), ...draft })} />
+      {adding ? (
+        <MealForm
+          initialType={lastType}
+          onSubmit={(draft) => {
+            onAdd({ id: newMealId(), ...draft })
+            setLastType(draft.type)
+            setAdding(false)
+          }}
+          onCancel={() => setAdding(false)}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 border-dashed font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+        >
+          <span aria-hidden="true" className="text-lg leading-none">
+            +
+          </span>
+          {en.meal.add}
+        </button>
+      )}
 
       {meals.length === 0 ? (
         <p className="mt-4 text-slate-500 text-sm">{en.meal.empty}</p>
