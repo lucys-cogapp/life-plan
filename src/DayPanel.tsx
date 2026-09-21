@@ -89,18 +89,20 @@ export function DayPanel({
       {meals.length === 0 ? (
         <p className="mt-4 text-slate-500 text-sm">{en.meal.empty}</p>
       ) : (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-5 flex flex-col gap-5">
           {mealTypes.map((type) => {
             const ofType = meals.filter((meal) => meal.type === type)
             if (ofType.length === 0) return null
             const typeTotal = ofType.reduce((sum, meal) => sum + meal.calories, 0)
             return (
               <div key={type}>
-                <h3 className="flex items-baseline justify-between gap-2 text-slate-500 text-xs">
-                  <span className="font-medium uppercase tracking-wide">{en.meal.types[type]}</span>
+                <h3 className="flex items-baseline justify-between gap-2 rounded-md bg-slate-100 px-2 py-1 text-slate-700 text-xs">
+                  <span className="font-semibold uppercase tracking-wider">
+                    {en.meal.types[type]}
+                  </span>
                   <span className="tabular-nums">{en.meal.value(typeTotal)}</span>
                 </h3>
-                <ul className="mt-1 divide-y divide-slate-200 border-slate-200 border-y">
+                <ul className="divide-y divide-slate-100">
                   {ofType.map((meal) =>
                     meal.id === editingId ? (
                       <li key={meal.id} className="py-2">
