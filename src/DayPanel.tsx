@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { en } from './en'
 import { MealForm } from './MealForm'
-import { type Meal, mealTypes } from './meals'
+import { type Meal, type MealDraft, mealTypes, newMealId } from './meals'
 import { formatDayHeading } from './week'
 
 type Props = {
@@ -10,10 +11,21 @@ type Props = {
   isToday: boolean
   headingId: string
   onAdd: (meal: Meal) => void
+  onUpdate: (mealId: string, draft: MealDraft) => void
   onRemove: (mealId: string) => void
 }
 
-export function DayPanel({ date, meals, dailyBudget, isToday, headingId, onAdd, onRemove }: Props) {
+export function DayPanel({
+  date,
+  meals,
+  dailyBudget,
+  isToday,
+  headingId,
+  onAdd,
+  onUpdate,
+  onRemove,
+}: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null)
   const total = meals.reduce((sum, meal) => sum + meal.calories, 0)
   const filled = dailyBudget > 0 ? Math.min(100, (total / dailyBudget) * 100) : 0
   const overBudget = dailyBudget > 0 && total > dailyBudget
@@ -49,7 +61,7 @@ export function DayPanel({ date, meals, dailyBudget, isToday, headingId, onAdd, 
         </div>
       )}
 
-      <MealForm onAdd={onAdd} />
+      <MealForm onSubmit={(draft) => onAdd({ id: newMealId(), ...draft })} />
 
       {meals.length === 0 ? (
         <p className="mt-4 text-slate-500 text-sm">{en.meal.empty}</p>
@@ -58,28 +70,50 @@ export function DayPanel({ date, meals, dailyBudget, isToday, headingId, onAdd, 
           {mealTypes.map((type) => {
             const ofType = meals.filter((meal) => meal.type === type)
             if (ofType.length === 0) return null
+            const typeTotal = ofType.reduce((sum, meal) => sum + meal.calories, 0)
             return (
               <div key={type}>
-                <h3 className="font-medium text-slate-500 text-xs uppercase tracking-wide">
-                  {en.meal.types[type]}
+                <h3 className="flex items-baseline justify-between gap-2 text-slate-500 text-xs">
+                  <span className="font-medium uppercase tracking-wide">{en.meal.types[type]}</span>
+                  <span className="tabular-nums">{en.meal.value(typeTotal)}</span>
                 </h3>
                 <ul className="mt-1 divide-y divide-slate-200 border-slate-200 border-y">
-                  {ofType.map((meal) => (
-                    <li key={meal.id} className="flex items-center gap-2 py-1">
-                      <span className="flex-1 text-slate-900">{meal.name}</span>
-                      <span className="text-slate-600 tabular-nums">
-                        {en.meal.value(meal.calories)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => onRemove(meal.id)}
-                        aria-label={en.meal.remove(meal.name)}
-                        className="flex size-9 items-center justify-center rounded-md text-slate-500 text-lg hover:bg-slate-100 hover:text-rose-700"
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
+                  {ofType.map((meal) =>
+                    meal.id === editingId ? (
+                      <li key={meal.id} className="py-2">
+                        <MealForm
+                          meal={meal}
+                          onSubmit={(draft) => {
+                            onUpdate(meal.id, draft)
+                            setEditingId(null)
+                          }}
+                          onCancel={() => setEditingId(null)}
+                        />
+                      </li>
+                    ) : (
+                      <li key={meal.id} className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(meal.id)}
+                          aria-label={en.meal.edit(meal.name)}
+                          className="flex min-h-11 flex-1 items-center gap-2 rounded-md px-1 text-left hover:bg-slate-100"
+                        >
+                          <span className="flex-1 text-slate-900">{meal.name}</span>
+                          <span className="text-slate-600 tabular-nums">
+                            {en.meal.value(meal.calories)}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onRemove(meal.id)}
+                          aria-label={en.meal.remove(meal.name)}
+                          className="flex size-9 shrink-0 items-center justify-center rounded-md text-lg text-slate-500 hover:bg-slate-100 hover:text-rose-700"
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
             )

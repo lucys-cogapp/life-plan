@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { DayPanel } from './DayPanel'
 import { en } from './en'
-import { addMeal, dayTotal, type MealsByDate, mealsOn, removeMeal, weekTotal } from './meals'
+import {
+  addMeal,
+  dayTotal,
+  type MealsByDate,
+  mealsOn,
+  removeMeal,
+  updateMeal,
+  weekTotal,
+} from './meals'
 import { useLocalStorage } from './useLocalStorage'
 import { WeekOverview } from './WeekOverview'
 import { WeekStrip } from './WeekStrip'
@@ -127,6 +135,9 @@ export default function App() {
             isToday={index === todayIndex}
             headingId={`${ids}-day-${index}`}
             onAdd={(meal) => setMeals((current) => addMeal(current, dateKeys[index], meal))}
+            onUpdate={(mealId, draft) =>
+              setMeals((current) => updateMeal(current, dateKeys[index], mealId, draft))
+            }
             onRemove={(mealId) =>
               setMeals((current) => removeMeal(current, dateKeys[index], mealId))
             }

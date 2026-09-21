@@ -13,12 +13,13 @@ function todayPanel() {
   return within(screen.getByRole('region', { name: new RegExp(formatDayHeading(today)) }))
 }
 
-async function logMeal(name: string, calories: string) {
+async function logMeal(name: string, calories: string, type: string = en.meal.types.breakfast) {
   const user = userEvent.setup()
-  const panel = todayPanel()
-  await user.type(panel.getByLabelText(en.meal.name), name)
-  await user.type(panel.getByLabelText(en.meal.calories), calories)
-  await user.click(panel.getByRole('button', { name: en.meal.add }))
+  const form = within(todayPanel().getByRole('form', { name: en.meal.addForm }))
+  await user.type(form.getByLabelText(en.meal.name), name)
+  await user.selectOptions(form.getByLabelText(en.meal.type), type)
+  await user.type(form.getByLabelText(en.meal.calories), calories)
+  await user.click(form.getByRole('button', { name: en.meal.add }))
 }
 
 test('renders the app name', () => {
@@ -50,8 +51,9 @@ test('a logged meal lands on its day and is stored', async () => {
   render(<App />)
   await logMeal('Porridge', '320')
   const panel = todayPanel()
-  expect(panel.getByText('Porridge')).toBeInTheDocument()
-  expect(panel.getByText(en.meal.value(320))).toBeInTheDocument()
+  expect(panel.getByRole('button', { name: en.meal.edit('Porridge') })).toHaveTextContent(
+    en.meal.value(320),
+  )
   expect(panel.getByText(en.totals.kcal(320))).toBeInTheDocument()
   expect(localStorage.getItem('meal-tracker:meals')).toContain(toDateKey(today))
 })
@@ -120,6 +122,65 @@ test('exporting hands over every meal logged', async () => {
   expect(csv).toContain(en.csv.columns.join(','))
   expect(csv).toContain(`${toDateKey(today)},${en.days.long[(today.getDay() + 6) % 7]}`)
   expect(csv).toContain('"Beans, toast",Breakfast,410')
+})
+
+test('a meal can be edited in place', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await logMeal('Porrige', '320')
+
+  await user.click(todayPanel().getByRole('button', { name: en.meal.edit('Porrige') }))
+  const form = within(todayPanel().getByRole('form', { name: en.meal.editForm('Porrige') }))
+  await user.clear(form.getByLabelText(en.meal.name))
+  await user.type(form.getByLabelText(en.meal.name), 'Porridge')
+  await user.clear(form.getByLabelText(en.meal.calories))
+  await user.type(form.getByLabelText(en.meal.calories), '380')
+  await user.click(form.getByRole('button', { name: en.meal.save }))
+
+  const panel = todayPanel()
+  expect(panel.getByRole('button', { name: en.meal.edit('Porridge') })).toBeInTheDocument()
+  expect(panel.queryByText('Porrige')).not.toBeInTheDocument()
+  expect(screen.getByText(en.totals.left(13620))).toBeInTheDocument()
+})
+
+test('cancelling an edit leaves the meal alone', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await logMeal('Porridge', '320')
+
+  await user.click(todayPanel().getByRole('button', { name: en.meal.edit('Porridge') }))
+  const form = within(todayPanel().getByRole('form', { name: en.meal.editForm('Porridge') }))
+  await user.clear(form.getByLabelText(en.meal.calories))
+  await user.type(form.getByLabelText(en.meal.calories), '999')
+  await user.click(form.getByRole('button', { name: en.meal.cancel }))
+
+  expect(screen.getByText(en.totals.left(13680))).toBeInTheDocument()
+})
+
+test('editing a meal onto another type moves it there', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await logMeal('Flapjack', '285')
+
+  await user.click(todayPanel().getByRole('button', { name: en.meal.edit('Flapjack') }))
+  const form = within(todayPanel().getByRole('form', { name: en.meal.editForm('Flapjack') }))
+  await user.selectOptions(form.getByLabelText(en.meal.type), en.meal.types.snack)
+  await user.click(form.getByRole('button', { name: en.meal.save }))
+
+  const group = todayPanel().getByRole('heading', { name: new RegExp(en.meal.types.snack, 'i') })
+  expect(group).toHaveTextContent(en.meal.value(285))
+  expect(todayPanel().queryByRole('heading', { name: /breakfast/i })).not.toBeInTheDocument()
+})
+
+test('each meal type carries its own running total', async () => {
+  render(<App />)
+  await logMeal('Porridge', '320')
+  await logMeal('Toast', '180')
+  await logMeal('Soup', '280', en.meal.types.lunch)
+
+  const panel = todayPanel()
+  expect(panel.getByRole('heading', { name: /breakfast/i })).toHaveTextContent(en.meal.value(500))
+  expect(panel.getByRole('heading', { name: /lunch/i })).toHaveTextContent(en.meal.value(280))
 })
 
 test('footer links to the repo', () => {

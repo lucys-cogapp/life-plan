@@ -66,6 +66,11 @@ export const en = {
     },
     value: (n: number) => `${calories(n)}kcals`,
     remove: (name: string) => `Remove ${name}`,
+    edit: (name: string) => `Edit ${name}`,
+    addForm: 'Add a meal',
+    editForm: (name: string) => `Editing ${name}`,
+    save: 'Save meal',
+    cancel: 'Cancel',
     empty: 'Nothing logged yet.',
   },
   csv: {

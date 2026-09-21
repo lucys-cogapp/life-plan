@@ -27,8 +27,13 @@ the same panels lay out as seven columns with the overview beneath.
 
 A meal is a name, a calorie figure and one of breakfast, lunch, dinner or snack. There
 is no limit on how many a day takes, and the day panel groups them under those four
-headings. Leaving the name blank falls back to the meal type. The add form sits above
-the list so it stays where it is as the day fills up.
+headings, each with its own running total. Leaving the name blank falls back to the
+meal type. The add form sits above the list so it stays where it is as the day fills
+up.
+
+Tapping a meal opens it for editing in place: change the name, the calories or the
+type, then Save or Cancel. Changing the type moves it to that group. The × beside a
+meal deletes it.
 
 The weekly target is one figure that applies to every week. The bar at the foot counts
 it down as meals are added and switches to counting up, in red, once the week goes over.
@@ -64,7 +69,7 @@ browser, so that file is the only backup there is.
 | `src/WeekStrip.tsx` | The Mon-Sun strip and the week tab |
 | `src/DayPanel.tsx` | One day: total, meals grouped by type, the add form |
 | `src/WeekOverview.tsx` | The eighth panel: day bars, totals, the target field |
-| `src/MealForm.tsx` | Name, type and calorie fields |
+| `src/MealForm.tsx` | Name, type and calorie fields, for adding and editing |
 | `src/meals.ts` | The meal types and the totalling and editing helpers |
 | `src/csv.ts` | The CSV export |
 | `src/week.ts` | Monday-anchored week maths and date formatting |

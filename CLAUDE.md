@@ -22,6 +22,14 @@ is a change that has not landed yet.
   a seven-column grid cannot be squeezed into one screen.
 - The countdown is at the bottom, by the thumb, not in the header. The add-meal form is
   at the top of each day, above the list, so it stays put as the day fills up.
+- `MealForm` both adds and edits. Passing a `meal` puts it in edit mode: it prefills,
+  swaps the button to Save, shows Cancel and takes focus. One component rather than two
+  keeps the fields, the validation and the blank-name fallback in one place.
+- Tapping a meal row opens that edit form in its place, so the day's list is also the
+  way in to changing something. `DayPanel` holds the open row in `editingId`.
+- Each meal-type group heading carries its own running total for that day. Both forms
+  are labelled (`Add a meal`, `Editing <name>`), which is how a test tells them apart
+  while both are on screen.
 - Panels are moved with `scrollIntoView` on the child, never `scrollTo` of
   `clientWidth * index`: on the first paint the track is not laid out, that arithmetic
   is zero, and the view sticks on Monday while the strip says otherwise.
@@ -39,8 +47,10 @@ is a change that has not landed yet.
 ## Data
 
 - A meal is `{ id, name, calories, type }`, type being breakfast, lunch, dinner or
-  snack. A blank name falls back to the meal type label. A meal row writes its figure
-  as `420kcals`; the day and week totals read `1,875 kcal`.
+  snack. A blank name falls back to the meal type label. A meal row and a meal-type
+  total write their figure as `420kcals`; the day and week totals read `1,875 kcal`.
+- Editing keeps the id and the position in the day, so a corrected meal stays where it
+  was rather than jumping to the end of the list.
 - Meals are keyed by local date (`2026-09-17`) in one flat object, not grouped into
   weeks. A week is then just a range of keys, so paging back through past weeks needs
   no migration when the week boundary or the target changes.

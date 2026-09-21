@@ -9,6 +9,9 @@ export type Meal = {
   type: MealType
 }
 
+// What a form hands back: everything about a meal except which meal it is.
+export type MealDraft = Omit<Meal, 'id'>
+
 // Meals are keyed by date rather than grouped into weeks, so a week is just a
 // range of keys and past weeks stay readable however the week boundary moves.
 export type MealsByDate = Record<string, Meal[]>
@@ -33,8 +36,24 @@ export function addMeal(meals: MealsByDate, dateKey: string, meal: Meal): MealsB
   return { ...meals, [dateKey]: [...mealsOn(meals, dateKey), meal] }
 }
 
+// The id and the position in the day are kept, so editing a meal does not move
+// it down the list or make it look like a different entry.
+export function updateMeal(
+  meals: MealsByDate,
+  dateKey: string,
+  mealId: string,
+  draft: MealDraft,
+): MealsByDate {
+  return {
+    ...meals,
+    [dateKey]: mealsOn(meals, dateKey).map((meal) =>
+      meal.id === mealId ? { ...meal, ...draft } : meal,
+    ),
+  }
+}
+
 // Dropping the key rather than leaving an empty array keeps storage from growing
-// a entry for every day the user ever opened.
+// an entry for every day the user ever opened.
 export function removeMeal(meals: MealsByDate, dateKey: string, mealId: string): MealsByDate {
   const remaining = mealsOn(meals, dateKey).filter((meal) => meal.id !== mealId)
   if (remaining.length > 0) return { ...meals, [dateKey]: remaining }

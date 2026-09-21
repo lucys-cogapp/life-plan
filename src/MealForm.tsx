@@ -1,35 +1,45 @@
 import { useId, useState } from 'react'
 import { en } from './en'
-import { type Meal, type MealType, mealTypes, newMealId } from './meals'
+import { type Meal, type MealDraft, type MealType, mealTypes } from './meals'
 
 type Props = {
-  onAdd: (meal: Meal) => void
+  onSubmit: (draft: MealDraft) => void
+  // Present when editing an existing meal, absent when adding a new one.
+  meal?: Meal
+  onCancel?: () => void
 }
 
-export function MealForm({ onAdd }: Props) {
+export function MealForm({ onSubmit, meal, onCancel }: Props) {
   const ids = useId()
-  const [name, setName] = useState('')
-  const [calories, setCalories] = useState('')
-  // The type carries over between entries: logging three snacks in a row should
-  // not mean picking "snack" three times.
-  const [type, setType] = useState<MealType>('breakfast')
+  const editing = meal !== undefined
+  const [name, setName] = useState(meal?.name ?? '')
+  const [calories, setCalories] = useState(meal ? String(meal.calories) : '')
+  // When adding, the type carries over between entries: logging three snacks in
+  // a row should not mean picking "snack" three times.
+  const [type, setType] = useState<MealType>(meal?.type ?? 'breakfast')
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
     const parsed = Number(calories)
     if (!Number.isFinite(parsed) || parsed < 0 || calories.trim() === '') return
-    onAdd({
-      id: newMealId(),
+    onSubmit({
       name: name.trim() === '' ? en.meal.types[type] : name.trim(),
       calories: Math.round(parsed),
       type,
     })
+    if (editing) return
     setName('')
     setCalories('')
   }
 
   return (
-    <form onSubmit={submit} className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <form
+      onSubmit={submit}
+      aria-label={editing ? en.meal.editForm(meal.name) : en.meal.addForm}
+      className={`rounded-lg border p-3 ${
+        editing ? 'border-slate-400 bg-white' : 'mt-4 border-slate-200 bg-slate-50'
+      }`}
+    >
       <div className="flex flex-col gap-1">
         <label htmlFor={`${ids}-name`} className="font-medium text-slate-700 text-sm">
           {en.meal.name}
@@ -39,6 +49,9 @@ export function MealForm({ onAdd }: Props) {
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder={en.meal.namePlaceholder}
+          // The row had to be tapped to get here, so the keyboard is wanted.
+          // biome-ignore lint/a11y/noAutofocus: only on the form the user opened
+          autoFocus={editing}
           className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-base"
         />
       </div>
@@ -77,12 +90,23 @@ export function MealForm({ onAdd }: Props) {
           />
         </div>
       </div>
-      <button
-        type="submit"
-        className="mt-3 min-h-11 w-full rounded-md bg-slate-900 px-4 font-medium text-white hover:bg-slate-700"
-      >
-        {en.meal.add}
-      </button>
+      <div className="mt-3 flex gap-2">
+        <button
+          type="submit"
+          className="min-h-11 flex-1 rounded-md bg-slate-900 px-4 font-medium text-white hover:bg-slate-700"
+        >
+          {editing ? en.meal.save : en.meal.add}
+        </button>
+        {editing && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="min-h-11 shrink-0 rounded-md border border-slate-300 px-4 font-medium hover:bg-slate-100"
+          >
+            {en.meal.cancel}
+          </button>
+        )}
+      </div>
     </form>
   )
 }
