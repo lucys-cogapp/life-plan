@@ -51,9 +51,8 @@ test('a logged meal lands on its day and is stored', async () => {
   render(<App />)
   await logMeal('Porridge', '320')
   const panel = todayPanel()
-  expect(panel.getByRole('button', { name: en.meal.edit('Porridge') })).toHaveTextContent(
-    en.meal.value(320),
-  )
+  expect(panel.getByRole('listitem')).toHaveTextContent(en.meal.value(320))
+  expect(panel.getByRole('button', { name: en.meal.edit('Porridge') })).toBeInTheDocument()
   expect(panel.getByText(en.totals.kcal(320))).toBeInTheDocument()
   expect(localStorage.getItem('meal-tracker:meals')).toContain(toDateKey(today))
 })

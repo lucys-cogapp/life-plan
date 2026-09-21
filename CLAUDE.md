@@ -25,8 +25,10 @@ is a change that has not landed yet.
 - `MealForm` both adds and edits. Passing a `meal` puts it in edit mode: it prefills,
   swaps the button to Save, shows Cancel and takes focus. One component rather than two
   keeps the fields, the validation and the blank-name fallback in one place.
-- Tapping a meal row opens that edit form in its place, so the day's list is also the
-  way in to changing something. `DayPanel` holds the open row in `editingId`.
+- Each meal row carries a pencil button next to the remove button, which opens that
+  edit form in the row's place. The row itself is not a button: editing is a deliberate
+  tap on a named control rather than anywhere on the row. `DayPanel` holds the open row
+  in `editingId`.
 - Each meal-type group heading carries its own running total for that day. Both forms
   are labelled (`Add a meal`, `Editing <name>`), which is how a test tells them apart
   while both are on screen.

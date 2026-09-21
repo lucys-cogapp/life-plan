@@ -91,23 +91,24 @@ export function DayPanel({
                         />
                       </li>
                     ) : (
-                      <li key={meal.id} className="flex items-center gap-1">
+                      <li key={meal.id} className="flex min-h-11 items-center gap-1 px-1">
+                        <span className="flex-1 text-slate-900">{meal.name}</span>
+                        <span className="text-slate-600 tabular-nums">
+                          {en.meal.value(meal.calories)}
+                        </span>
                         <button
                           type="button"
                           onClick={() => setEditingId(meal.id)}
                           aria-label={en.meal.edit(meal.name)}
-                          className="flex min-h-11 flex-1 items-center gap-2 rounded-md px-1 text-left hover:bg-slate-100"
+                          className="ml-1 flex size-9 shrink-0 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-900"
                         >
-                          <span className="flex-1 text-slate-900">{meal.name}</span>
-                          <span className="text-slate-600 tabular-nums">
-                            {en.meal.value(meal.calories)}
-                          </span>
+                          <PencilIcon />
                         </button>
                         <button
                           type="button"
                           onClick={() => onRemove(meal.id)}
                           aria-label={en.meal.remove(meal.name)}
-                          className="flex size-9 shrink-0 items-center justify-center rounded-md text-lg text-slate-500 hover:bg-slate-100 hover:text-rose-700"
+                          className="flex size-9 shrink-0 items-center justify-center rounded-md text-lg text-slate-400 hover:bg-slate-100 hover:text-rose-700"
                         >
                           ×
                         </button>
@@ -121,5 +122,23 @@ export function DayPanel({
         </div>
       )}
     </section>
+  )
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-4"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
   )
 }
