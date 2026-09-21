@@ -55,7 +55,6 @@ export const en = {
     heading: 'Meals',
     add: 'Add meal',
     name: 'Meal',
-    namePlaceholder: 'Porridge',
     calories: 'Calories',
     type: 'Meal type',
     types: {

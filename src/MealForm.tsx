@@ -46,7 +46,6 @@ export function MealForm({ onSubmit, meal, onCancel, initialType }: Props) {
           id={`${ids}-name`}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder={en.meal.namePlaceholder}
           // Neither form is on screen until a button is tapped to open it, so
           // reaching this field means the keyboard is wanted.
           // biome-ignore lint/a11y/noAutofocus: only on the form the user opened
